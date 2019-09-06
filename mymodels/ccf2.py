@@ -57,7 +57,7 @@ def genStatFeat(data,fea_list):
     return df,stat_feat
 
 ## 把预测log_label的cv概率转为提交文档格式
-def genLogSub(res,n_split):
+def genLogSub(data,res,n_split):
     res2 = pd.DataFrame()
     for i in range(1,n_split+1):  
         res2['prob_%s' % str(i)] = res['prob_%s' % str(i)].apply(lambda x : math.exp(x))
