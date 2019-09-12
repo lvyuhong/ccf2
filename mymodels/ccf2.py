@@ -39,21 +39,23 @@ def genShitFeat(data,shift_list):
 
 
 ## 生成统计特征
-def genStatFeat(data,fea_list):
+def genStatFeat(data,fea_list,target):
     df = data.copy()
     print('统计列的sum,mean,max,min,分位数0.2,分位数0.5,分位数0.8')
     stat_feat = []
     for f in fea_list:
         print('构造特征:',f)
-        g1 = df.groupby([f])
-        df1 = g1.agg({'label':["sum","mean","max","min"]})
-        df1.columns = [f+'_sum',f+'_mean',f+'_max',f+'_mim']
-        df1['%s_median2' % f] = g1['label'].quantile(0.2)
-        df1['%s_median5' % f] = g1['label'].quantile(0.5)
-        df1['%s_median8' % f] = g1['label'].quantile(0.8)
-        df1.reset_index(inplace=True)
-        df = df.merge(df1,'left',on=[f])
-        stat_feat = stat_feat+list(df1.columns)
+        for t in target:
+            print('构造特征:',f,'_',t)
+            g1 = df.groupby([f])
+            df1 = g1.agg({t:["sum","mean","max","min"]})
+            df1.columns = ['{}_{}_sum'.format(t,f),'{}_{}_mean'.format(t,f),'{}_{}_max'.format(t,f),'{}_{}_mim'.format(t,f)]
+            df1['{}_{}_median2'.format(t, f)] = g1['label'].quantile(0.2)
+            df1['{}_{}_median5'.format(t, f)] = g1['label'].quantile(0.5)
+            df1['{}_{}_median8'.format(t, f)] = g1['label'].quantile(0.8)
+            df1.reset_index(inplace=True)
+            df = df.merge(df1,'left',on=[f])
+            stat_feat = stat_feat+list(df1.columns)
     return df,stat_feat
 
 ## 把预测log_label的cv概率转为提交文档格式
