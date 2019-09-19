@@ -16,7 +16,7 @@ def loaddata(path):
 
     data['label'] = data['salesVolume']
     data['id'] = data['id'].fillna(0).astype(int)
-    del data['salesVolume'], data['forecastVolum']
+    data['salesVolume'], data['forecastVolum']
     data['bodyType'] = data['model'].map(train_sales_data.drop_duplicates('model').set_index('model')['bodyType'])
 
     for i in ['bodyType', 'model']:
@@ -37,6 +37,20 @@ def genShitFeat(data,shift_list):
         data['shift_model_adcode_mt_label_{0}'.format(i)] = data['model_adcode_mt'].map(data_last['label'])
     return data,shift_feat
 
+def get_shift_feat2(df_,col_list,mt_list):   
+    df = df_.copy()
+    shift_feat = []
+    df['model_adcode'] = df['adcode'] + df['model']
+    df['model_adcode_mt'] = df['model_adcode'] * 100 + df['mt']
+#     for col in tqdm(['label','popularity']):
+    for col in col_list:
+        # shift
+        for i in mt_list:
+            shift_feat.append('shift_model_adcode_mt_{}_{}'.format(col,i))
+            df['model_adcode_mt_{}_{}'.format(col,i)] = df['model_adcode_mt'] + i
+            df_last = df[~df[col].isnull()].set_index('model_adcode_mt_{}_{}'.format(col,i))
+            df['shift_model_adcode_mt_{}_{}'.format(col,i)] = df['model_adcode_mt'].map(df_last[col])    
+    return df,shift_feat
 
 ## 生成统计特征
 def genStatFeat(data,fea_list,target):
